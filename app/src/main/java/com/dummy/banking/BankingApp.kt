@@ -1,0 +1,7 @@
+package com.dummy.banking
+
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
+
+@HiltAndroidApp
+class BankingApp : Application()
