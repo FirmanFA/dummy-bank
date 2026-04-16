@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,9 +19,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,6 +47,7 @@ fun TransferScreen(
 
     val uiState by viewModel.uiState.collectAsState()
     val primaryColor = MaterialTheme.colorScheme.primary
+    val focusManager = LocalFocusManager.current
 
     if (uiState is TransferUiState.Success) {
         val amount = amountString.toLongOrNull() ?: 0L
@@ -200,7 +205,13 @@ fun TransferScreen(
                             onValueChange = { if (it.all { char -> char.isDigit() }) recipient = it },
                             label = { Text("Nomor Rekening Tujuan") },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
                             placeholder = { Text("Masukkan min. 10 digit") },
                             shape = RoundedCornerShape(16.dp),
                             leadingIcon = { Icon(Icons.Default.AccountBalance, null, tint = primaryColor) },
@@ -221,7 +232,13 @@ fun TransferScreen(
                             },
                             label = { Text("Nominal Transfer") },
                             modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = { focusManager.clearFocus() }
+                            ),
                             prefix = { Text("Rp ", fontWeight = FontWeight.ExtraBold, color = primaryColor) },
                             visualTransformation = CurrencyFormatter.IndonesianCurrencyTransformation,
                             shape = RoundedCornerShape(16.dp),
@@ -387,6 +404,7 @@ fun TransferScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        focusManager.clearFocus()
                         showConfirmDialog = false
                         viewModel.transfer(recipient, amount)
                     },

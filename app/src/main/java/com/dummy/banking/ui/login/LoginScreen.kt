@@ -3,8 +3,11 @@ package com.dummy.banking.ui.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -12,11 +15,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -37,6 +43,7 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
@@ -76,6 +83,7 @@ fun LoginScreen(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
+                .imePadding() // Add padding for keyboard
                 .fillMaxHeight(0.72f)
                 .align(Alignment.BottomCenter),
             shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
@@ -84,6 +92,7 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState()) // Make it scrollable
                     .padding(horizontal = 32.dp, vertical = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -106,9 +115,16 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Email Address") },
+                    label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    ),
                     shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -124,7 +140,13 @@ fun LoginScreen(
                     label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.clearFocus() }
+                    ),
                     trailingIcon = {
                         val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -151,13 +173,14 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Button(
-//                    onClick = { viewModel.login(username, password) },
-                    onClick = { onLoginSuccess.invoke() },
+                    onClick = {
+                        focusManager.clearFocus()
+                        viewModel.login(username, password)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-//                    enabled = username.isNotBlank() && password.isNotBlank() && uiState !is LoginUiState.Loading,
-                    enabled = true,
+                    enabled = username.isNotBlank() && password.length >= 6 && uiState !is LoginUiState.Loading,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     contentPadding = PaddingValues()
@@ -166,8 +189,10 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
-                                brush = Brush.horizontalGradient(
+                                brush = if(username.isNotBlank() && password.length >= 6 && uiState !is LoginUiState.Loading) Brush.horizontalGradient(
                                     colors = listOf(primaryColor, secondaryColor)
+                                )else Brush.horizontalGradient(
+                                    colors = listOf(Color.LightGray)
                                 )
                             ),
                         contentAlignment = Alignment.Center

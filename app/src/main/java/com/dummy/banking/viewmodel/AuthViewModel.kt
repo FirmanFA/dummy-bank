@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dummy.banking.model.User
 import com.dummy.banking.repository.AuthRepository
+import com.dummy.banking.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +21,8 @@ sealed class LoginUiState {
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
@@ -31,6 +33,7 @@ class AuthViewModel @Inject constructor(
             _uiState.value = LoginUiState.Loading
             val result = authRepository.login(username, password)
             result.onSuccess {
+                sessionManager.saveUser(it)
                 _uiState.value = LoginUiState.Success(it)
             }.onFailure {
                 _uiState.value = LoginUiState.Error(it.message ?: "Login failed")

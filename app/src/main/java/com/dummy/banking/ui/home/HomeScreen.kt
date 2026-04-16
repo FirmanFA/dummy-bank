@@ -73,11 +73,17 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             item {
-                HeaderSection(primaryColor)
+                when (val state = uiState) {
+                    is HomeUiState.Success -> HeaderSection(state.user?.name ?: "FIRMANSYAH FIRDAUS ANHAR", primaryColor)
+                    else -> HeaderSection("...", primaryColor)
+                }
             }
 
             item {
-                BalanceCard(onNavigateToHistory, primaryColor)
+                when (val state = uiState) {
+                    is HomeUiState.Success -> BalanceCard(state.user?.balance ?: 0L, onNavigateToHistory, primaryColor)
+                    else -> BalanceCard(0L, onNavigateToHistory, primaryColor)
+                }
             }
 
 //            item {
@@ -256,7 +262,7 @@ fun ComingSoonDialog(onDismiss: () -> Unit) {
 }
 
 @Composable
-fun HeaderSection(primary: Color) {
+fun HeaderSection(userName: String, primary: Color) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -288,7 +294,7 @@ fun HeaderSection(primary: Color) {
 
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                "HALO, FIRMANSYAH FIRDAUS ANHAR",
+                "HALO, ${userName.uppercase()}",
                 color = Color.White,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
@@ -299,7 +305,7 @@ fun HeaderSection(primary: Color) {
 }
 
 @Composable
-fun BalanceCard(onHistory: () -> Unit, primary: Color) {
+fun BalanceCard(balance: Long, onHistory: () -> Unit, primary: Color) {
     var isBalanceVisible by remember { mutableStateOf(false) }
 
     Card(
@@ -332,7 +338,7 @@ fun BalanceCard(onHistory: () -> Unit, primary: Color) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isBalanceVisible) CurrencyFormatter.formatToRupiah(9837760L) else "IDR ••••••••",
+                    text = if (isBalanceVisible) CurrencyFormatter.formatToRupiah(balance) else "IDR ••••••••",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF333333)
@@ -508,21 +514,6 @@ fun TransactionItem(transaction: Transaction) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFF5F5F5)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Person,
-                        null,
-                        modifier = Modifier.size(20.dp),
-                        tint = Color.Gray
-                    )
-                }
-                Spacer(modifier = Modifier.width(14.dp))
                 Column {
                     Text(transaction.recipient, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     Text(transaction.date, fontSize = 12.sp, color = Color.Gray)

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "name": "Firmansyah Firdaus Anhar",
+    "username": "firman",
+    "password": "password123",
+    "balance": 5000000
+  },
+  {
+    "id": "2",
+    "name": "Rizky Ramadhan",
+    "username": "rizky",
+    "password": "password456",
+    "balance": 2500000
+  },
+  {
+    "id": "3",
+    "name": "Jane Doe",
+    "username": "jane",
+    "password": "password789",
+    "balance": 10000000
+  }
+]
