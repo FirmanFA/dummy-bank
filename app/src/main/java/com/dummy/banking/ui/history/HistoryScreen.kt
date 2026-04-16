@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.dummy.banking.ui.home.TransactionItem
+import com.dummy.banking.ui.components.TransactionItem
 import com.dummy.banking.viewmodel.HistoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

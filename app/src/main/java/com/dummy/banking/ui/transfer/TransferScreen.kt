@@ -34,6 +34,8 @@ import com.dummy.banking.utils.CurrencyFormatter
 import com.dummy.banking.viewmodel.TransferUiState
 import com.dummy.banking.viewmodel.TransferViewModel
 
+private const val DUMMY_RECIPIENT_NAME = "Rizky Ramadhan"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransferScreen(
@@ -51,7 +53,7 @@ fun TransferScreen(
 
     if (uiState is TransferUiState.Success) {
         val amount = amountString.toLongOrNull() ?: 0L
-        val recipientName = "Rizky Ramadhan"
+        val recipientName = DUMMY_RECIPIENT_NAME
         
         LaunchedEffect(Unit) {
             onTransferSuccess(amount, recipientName, recipient)

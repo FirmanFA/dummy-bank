@@ -172,6 +172,8 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
+                val isFormValid = username.isNotBlank() && password.length >= 6 && uiState !is LoginUiState.Loading
+
                 Button(
                     onClick = {
                         focusManager.clearFocus()
@@ -180,7 +182,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-                    enabled = username.isNotBlank() && password.length >= 6 && uiState !is LoginUiState.Loading,
+                    enabled = isFormValid,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     contentPadding = PaddingValues()
@@ -189,10 +191,10 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
-                                brush = if(username.isNotBlank() && password.length >= 6 && uiState !is LoginUiState.Loading) Brush.horizontalGradient(
+                                brush = if(isFormValid) Brush.horizontalGradient(
                                     colors = listOf(primaryColor, secondaryColor)
                                 )else Brush.horizontalGradient(
-                                    colors = listOf(Color.LightGray)
+                                    colors = listOf(Color.LightGray, Color.LightGray)
                                 )
                             ),
                         contentAlignment = Alignment.Center

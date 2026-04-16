@@ -15,14 +15,20 @@ class AuthRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val moshi: Moshi
 ) {
+    private var cachedUsers: List<User>? = null
+
     suspend fun login(username: String, password: String): Result<User> {
         delay(1500) // Simulate API delay
         
-        val jsonString = context.resources.openRawResource(R.raw.users)
-            .bufferedReader().use { it.readText() }
-        val listType = Types.newParameterizedType(List::class.java, User::class.java)
-        val adapter = moshi.adapter<List<User>>(listType)
-        val users = adapter.fromJson(jsonString) ?: emptyList()
+        val users = cachedUsers ?: run {
+            val jsonString = context.resources.openRawResource(R.raw.users)
+                .bufferedReader().use { it.readText() }
+            val listType = Types.newParameterizedType(List::class.java, User::class.java)
+            val adapter = moshi.adapter<List<User>>(listType)
+            val result = adapter.fromJson(jsonString) ?: emptyList()
+            cachedUsers = result
+            result
+        }
 
         val user = users.find { it.username == username && it.password == password }
         

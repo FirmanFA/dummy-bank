@@ -16,7 +16,7 @@ import javax.inject.Inject
 sealed class HomeUiState {
     object Loading : HomeUiState()
     data class Success(
-        val user: User?,
+        val user: User,
         val transactions: List<Transaction>
     ) : HomeUiState()
     data class Error(val message: String) : HomeUiState()
@@ -40,6 +40,10 @@ class HomeViewModel @Inject constructor(
             _uiState.value = HomeUiState.Loading
             try {
                 val user = sessionManager.getUser()
+                if (user == null) {
+                    _uiState.value = HomeUiState.Error("Session expired. Please login again.")
+                    return@launch
+                }
                 val transactions = transactionRepository.getTransactions().take(5)
                 _uiState.value = HomeUiState.Success(user, transactions)
             } catch (e: Exception) {

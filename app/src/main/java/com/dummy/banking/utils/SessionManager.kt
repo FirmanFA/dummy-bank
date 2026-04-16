@@ -12,15 +12,15 @@ class SessionManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val moshi: Moshi
 ) {
-    private val prefs = context.getSharedPreferences("banking_prefs", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val adapter = moshi.adapter(User::class.java)
 
     fun saveUser(user: User) {
-        prefs.edit().putString("user_data", adapter.toJson(user)).apply()
+        prefs.edit().putString(KEY_USER_DATA, adapter.toJson(user)).apply()
     }
 
     fun getUser(): User? {
-        val json = prefs.getString("user_data", null) ?: return null
+        val json = prefs.getString(KEY_USER_DATA, null) ?: return null
         return try {
             adapter.fromJson(json)
         } catch (e: Exception) {
@@ -29,10 +29,15 @@ class SessionManager @Inject constructor(
     }
 
     fun clearSession() {
-        prefs.edit().remove("user_data").apply()
+        prefs.edit().remove(KEY_USER_DATA).apply()
     }
 
     fun isLoggedIn(): Boolean {
         return getUser() != null
+    }
+
+    companion object {
+        private const val PREFS_NAME = "banking_prefs"
+        private const val KEY_USER_DATA = "user_data"
     }
 }

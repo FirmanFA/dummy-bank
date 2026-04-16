@@ -15,13 +15,19 @@ class TransactionRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val moshi: Moshi
 ) {
+    private var cachedTransactions: List<Transaction>? = null
+
     suspend fun getTransactions(): List<Transaction> {
+        cachedTransactions?.let { return it }
+
         delay(1000) // Simulate delay
         val jsonString = context.resources.openRawResource(R.raw.transactions)
             .bufferedReader().use { it.readText() }
         val listType = Types.newParameterizedType(List::class.java, Transaction::class.java)
         val adapter = moshi.adapter<List<Transaction>>(listType)
-        return adapter.fromJson(jsonString) ?: emptyList()
+        val result = adapter.fromJson(jsonString) ?: emptyList()
+        cachedTransactions = result
+        return result
     }
 
     suspend fun getTransactionsPaginated(page: Int, pageSize: Int): List<Transaction> {
@@ -35,11 +41,16 @@ class TransactionRepository @Inject constructor(
 
     suspend fun transfer(recipient: String, amount: Long): Result<Boolean> {
         delay(2000)
-        val success = (1..10).random() > 3
+        // Simulates ~70% transfer success rate
+        val success = (1..10).random() > TRANSFER_SUCCESS_THRESHOLD
         return if (success) {
             Result.success(true)
         } else {
             Result.failure(Exception("Transfer failed. Please try again later."))
         }
+    }
+
+    companion object {
+        private const val TRANSFER_SUCCESS_THRESHOLD = 3
     }
 }

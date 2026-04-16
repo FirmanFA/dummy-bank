@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +32,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.dummy.banking.R
 import com.dummy.banking.model.Transaction
+import com.dummy.banking.model.TransactionStatus
+import com.dummy.banking.ui.components.TransactionItem
 import com.dummy.banking.utils.CurrencyFormatter
 import com.dummy.banking.viewmodel.HomeUiState
 import com.dummy.banking.viewmodel.HomeViewModel
@@ -45,6 +46,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val currentState = uiState
     val primaryColor = MaterialTheme.colorScheme.primary
     var showComingSoonDialog by remember { mutableStateOf(false) }
 
@@ -73,22 +75,18 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             item {
-                when (val state = uiState) {
-                    is HomeUiState.Success -> HeaderSection(state.user?.name ?: "FIRMANSYAH FIRDAUS ANHAR", primaryColor)
+                when (val state = currentState) {
+                    is HomeUiState.Success -> HeaderSection(state.user.name, primaryColor)
                     else -> HeaderSection("...", primaryColor)
                 }
             }
 
             item {
-                when (val state = uiState) {
-                    is HomeUiState.Success -> BalanceCard(state.user?.balance ?: 0L, onNavigateToHistory, primaryColor)
+                when (val state = currentState) {
+                    is HomeUiState.Success -> BalanceCard(state.user.balance, onNavigateToHistory, primaryColor)
                     else -> BalanceCard(0L, onNavigateToHistory, primaryColor)
                 }
             }
-
-//            item {
-//                BannerSection(primaryColor)
-//            }
 
             item {
                 MenuGrid(onNavigateToTransfer, {
@@ -107,7 +105,7 @@ fun HomeScreen(
                 )
             }
 
-            when (val state = uiState) {
+            when (val state = currentState) {
                 is HomeUiState.Loading -> {
                     item {
                         Box(
@@ -166,14 +164,12 @@ fun HomeScreen(
                         modifier = Modifier.height(32.dp),
                         contentScale = ContentScale.Fit
                     )
-                    Row {
-                        IconButton(onClick = onLogout) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Logout,
-                                null,
-                                tint = Color.White
-                            )
-                        }
+                    IconButton(onClick = onLogout) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Logout,
+                            null,
+                            tint = Color.White
+                        )
                     }
                 }
             }
@@ -383,42 +379,6 @@ fun BalanceCard(balance: Long, onHistory: () -> Unit, primary: Color) {
 }
 
 @Composable
-fun BannerSection(primary: Color) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .offset(y = (-50).dp)
-            .height(70.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = primary.copy(alpha = 0.08f))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.CardGiftcard,
-                    null,
-                    tint = primary,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text("Gebyar Hadiah Dummy", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("Menangkan di Sini", fontSize = 12.sp, color = primary)
-                }
-            }
-            Icon(Icons.Default.ChevronRight, null, tint = primary)
-        }
-    }
-}
-
-@Composable
 fun MenuGrid(onTransfer: () -> Unit, onDefault: () -> Unit, primary: Color) {
     val menus = listOf(
         Triple("Transfer", Icons.AutoMirrored.Filled.Send, onTransfer),
@@ -459,8 +419,7 @@ fun MenuGrid(onTransfer: () -> Unit, onDefault: () -> Unit, primary: Color) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            for (j in 0 until 4) {
-                val menu = menus[j]
+            menus.forEach { menu ->
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -524,14 +483,14 @@ fun TransactionItem(transaction: Transaction) {
                     CurrencyFormatter.formatToRupiah(transaction.amount),
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 14.sp,
-                    color = if (transaction.status == "Success") Color(0xFF2E7D32) else Color(
+                    color = if (transaction.status == TransactionStatus.Success) Color(0xFF2E7D32) else Color(
                         0xFFD32F2F
                     )
                 )
                 Text(
-                    transaction.status,
+                    transaction.status.name,
                     fontSize = 11.sp,
-                    color = if (transaction.status == "Success") Color(0xFF2E7D32) else Color(
+                    color = if (transaction.status == TransactionStatus.Success) Color(0xFF2E7D32) else Color(
                         0xFFD32F2F
                     )
                 )
