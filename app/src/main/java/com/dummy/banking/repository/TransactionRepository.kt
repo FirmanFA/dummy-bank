@@ -24,9 +24,18 @@ class TransactionRepository @Inject constructor(
         return adapter.fromJson(jsonString) ?: emptyList()
     }
 
+    suspend fun getTransactionsPaginated(page: Int, pageSize: Int): List<Transaction> {
+        delay(1000) // Simulate network delay
+        val allTransactions = getTransactions()
+        val fromIndex = page * pageSize
+        if (fromIndex >= allTransactions.size) return emptyList()
+        val toIndex = minOf(fromIndex + pageSize, allTransactions.size)
+        return allTransactions.subList(fromIndex, toIndex)
+    }
+
     suspend fun transfer(recipient: String, amount: Long): Result<Boolean> {
-        delay(2000) // Simulate network delay
-        val success = (1..10).random() > 3 // 70% success rate
+        delay(2000)
+        val success = (1..10).random() > 3
         return if (success) {
             Result.success(true)
         } else {

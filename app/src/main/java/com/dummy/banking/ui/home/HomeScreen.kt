@@ -300,7 +300,7 @@ fun HeaderSection(primary: Color) {
 
 @Composable
 fun BalanceCard(onHistory: () -> Unit, primary: Color) {
-    var isBalanceVisible by remember { mutableStateOf(true) }
+    var isBalanceVisible by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
